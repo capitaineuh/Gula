@@ -3,6 +3,10 @@
 # ============================================
 *.md
 !README.md
+!LINTING.md
+
+# Exclure les fichiers de résumé temporaires
+SUMMARY_*.md
 
 # ============================================
 # Python

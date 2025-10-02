@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, ChangeEvent, FormEvent } from 'react'
+import { motion } from 'framer-motion'
 import { parseCSV, parseJSON, validateParsedData, ParsedData } from '@/services/csvParser'
 
 interface UploadFormProps {
@@ -112,23 +113,27 @@ export default function UploadForm({ onDataParsed }: UploadFormProps) {
         )}
 
         <div className="flex gap-3">
-          <button
+          <motion.button
             type="submit"
             disabled={!file || isLoading}
+            whileHover={{ scale: !file || isLoading ? 1 : 1.02 }}
+            whileTap={{ scale: !file || isLoading ? 1 : 0.98 }}
             className="flex-1 bg-primary-500 hover:bg-primary-600 disabled:bg-gray-300 
-              text-white font-semibold py-3 px-6 rounded transition-colors"
+              text-white font-semibold py-3 px-6 rounded transition-colors shadow-sm hover:shadow-md"
           >
             {isLoading ? 'Analyse en cours...' : 'Analyser'}
-          </button>
+          </motion.button>
           
-          <button
+          <motion.button
             type="button"
             onClick={handleExampleData}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             className="flex-1 bg-secondary-500 hover:bg-secondary-600 
-              text-white font-semibold py-3 px-6 rounded transition-colors"
+              text-white font-semibold py-3 px-6 rounded transition-colors shadow-sm hover:shadow-md"
           >
             Utiliser des données d'exemple
-          </button>
+          </motion.button>
         </div>
       </form>
 
