@@ -246,6 +246,7 @@ Le MVP est maintenant **complet et fonctionnel** ! Voici ce qui est implémenté
 - ✅ Visualisations avec Chart.js (graphiques comparatifs)
 - ✅ Explications vulgarisées pour chaque biomarqueur
 - ✅ Conseils personnalisés selon le statut
+- ✅ **Export PDF professionnel** (nouveau !)
 - ✅ Interface moderne et responsive
 - ✅ 10 biomarqueurs pré-configurés
 - ✅ Fichiers de test fournis
@@ -261,12 +262,12 @@ Consultez le [Guide de test complet](GUIDE_TEST.md) pour valider toutes les fonc
 
 ## 📝 Prochaines étapes (Post-MVP)
 
+- [x] **Export PDF des résultats** ✅ Implémenté !
 - [ ] Intégrer une IA locale pour analyses avancées
 - [ ] Créer la visualisation 3D du corps humain (Three.js)
 - [ ] Ajouter plus de biomarqueurs (vitamines, minéraux, etc.)
 - [ ] Implémenter l'authentification utilisateur
 - [ ] Ajouter l'historique des analyses
-- [ ] Export PDF des résultats
 - [ ] Mode sombre
 - [ ] Multilingue (EN, FR, etc.)
 

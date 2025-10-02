@@ -2,12 +2,15 @@
 Définition des routes API
 """
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List
 from app.database.connection import get_db
 from app.models.schemas import AnalyzeRequest, AnalyzeResponse, BiomarkerAnalysis
 from app.models.base import Biomarker
 from app.services.analyzer import BiomarkerAnalyzer
+from app.services.pdf_generator import generate_pdf_report
+from datetime import datetime
 
 router = APIRouter()
 
@@ -114,5 +117,63 @@ async def get_biomarkers(db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500,
             detail=f"Erreur lors de la récupération des biomarqueurs : {str(e)}"
+        )
+
+
+@router.post("/export-pdf")
+async def export_pdf(
+    data: AnalyzeResponse,
+    db: Session = Depends(get_db)
+):
+    """
+    Générer et télécharger un rapport PDF des résultats d'analyse
+    
+    Args:
+        data: Résultats de l'analyse (AnalyzeResponse)
+        db: Session de base de données
+        
+    Returns:
+        Fichier PDF téléchargeable
+    """
+    try:
+        # Convertir AnalyzeResponse en dictionnaire pour le générateur PDF
+        results_dict = {
+            "status": data.status,
+            "message": data.message,
+            "results": [
+                {
+                    "biomarker": result.biomarker,
+                    "value": result.value,
+                    "unit": result.unit,
+                    "status": result.status,
+                    "min_value": result.min_value,
+                    "max_value": result.max_value,
+                    "explanation": result.explanation,
+                    "advice": result.advice
+                }
+                for result in data.results
+            ],
+            "summary": data.summary
+        }
+        
+        # Générer le PDF
+        pdf_buffer = generate_pdf_report(results_dict)
+        
+        # Créer un nom de fichier avec la date
+        filename = f"healer_analyse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        
+        # Retourner le PDF en tant que fichier téléchargeable
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erreur lors de la génération du PDF : {str(e)}"
         )
 

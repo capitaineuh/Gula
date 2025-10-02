@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { getStatusBadge } from '@/services/chartConfig'
+import { downloadPDF } from '@/services/api'
 import BiomarkerChart from './BiomarkerChart'
 
 export interface BiomarkerResult {
@@ -34,9 +35,25 @@ interface ResultsDashboardProps {
 
 export default function ResultsDashboard({ results, onReset }: ResultsDashboardProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+  const [isExportingPDF, setIsExportingPDF] = useState(false)
+  const [pdfError, setPdfError] = useState<string>('')
 
   const toggleExpand = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index)
+  }
+
+  const handleExportPDF = async () => {
+    setIsExportingPDF(true)
+    setPdfError('')
+    
+    try {
+      await downloadPDF(results)
+    } catch (error) {
+      setPdfError('Erreur lors de l\'export PDF. Veuillez réessayer.')
+      console.error('Erreur export PDF:', error)
+    } finally {
+      setIsExportingPDF(false)
+    }
   }
 
   return (
@@ -50,13 +67,41 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
             </h2>
             <p className="text-gray-600 mt-1">{results.message}</p>
           </div>
-          <button
-            onClick={onReset}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded transition-colors"
-          >
-            Nouvelle analyse
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleExportPDF}
+              disabled={isExportingPDF}
+              className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition-colors flex items-center gap-2"
+            >
+              {isExportingPDF ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Génération...
+                </>
+              ) : (
+                <>
+                  📄 Exporter PDF
+                </>
+              )}
+            </button>
+            <button
+              onClick={onReset}
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded transition-colors"
+            >
+              Nouvelle analyse
+            </button>
+          </div>
         </div>
+
+        {/* Erreur PDF */}
+        {pdfError && (
+          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            ⚠️ {pdfError}
+          </div>
+        )}
 
         {/* Résumé des statuts */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">

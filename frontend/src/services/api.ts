@@ -89,5 +89,40 @@ export const getBiomarkers = async (): Promise<any> => {
   return response.data
 }
 
+// Exporter les résultats en PDF
+export const exportPDF = async (analysisResults: AnalyzeResponse): Promise<Blob> => {
+  const response = await apiClient.post('/api/export-pdf', analysisResults, {
+    responseType: 'blob', // Important pour recevoir le PDF
+  })
+  return response.data
+}
+
+// Helper pour déclencher le téléchargement du PDF
+export const downloadPDF = async (analysisResults: AnalyzeResponse): Promise<void> => {
+  try {
+    const blob = await exportPDF(analysisResults)
+    
+    // Créer un lien de téléchargement
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    
+    // Nom du fichier avec date
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+    link.download = `healer_analyse_${timestamp}.pdf`
+    
+    // Déclencher le téléchargement
+    document.body.appendChild(link)
+    link.click()
+    
+    // Nettoyer
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Erreur lors du téléchargement du PDF:', error)
+    throw new Error('Impossible de télécharger le PDF')
+  }
+}
+
 export default apiClient
 
