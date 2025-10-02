@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: healer-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-healer_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healer_password}
+      POSTGRES_DB: ${POSTGRES_DB:-healer_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d  # Scripts d'initialisation si nécessaire
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healer_user -d healer_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - healer-network
+
+  # Backend FastAPI
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: healer-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-healer_user}:${POSTGRES_PASSWORD:-healer_password}@db:5432/${POSTGRES_DB:-healer_db}
+      ENV: ${ENV:-development}
+      DEBUG: ${DEBUG:-True}
+    volumes:
+      - ./backend/app:/app/app  # Hot-reload en développement
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - healer-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend Next.js
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev  # Utiliser Dockerfile.dev pour le développement
+    container_name: healer-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NODE_ENV: development
+    volumes:
+      - ./frontend/src:/app/src  # Hot-reload en développement
+      - ./frontend/public:/app/public
+      - /app/node_modules  # Éviter d'écraser node_modules
+      - /app/.next  # Éviter d'écraser le cache Next.js
+    depends_on:
+      - backend
+    networks:
+      - healer-network
+
+# Volumes persistants
+volumes:
+  postgres_data:
+    driver: local
+    name: healer-postgres-data
+
+# Réseau interne
+networks:
+  healer-network:
+    driver: bridge
+    name: healer-network
+
