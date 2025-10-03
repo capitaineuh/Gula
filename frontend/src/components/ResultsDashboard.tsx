@@ -64,7 +64,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
         <div className="flex justify-between items-start mb-4">
           <div>
             <h2 className="text-2xl font-semibold text-gray-800">
-              📊 Résultats de l'analyse
+              Résultats de l'analyse
             </h2>
             <p className="text-gray-600 mt-1">{results.message}</p>
           </div>
@@ -74,7 +74,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
               disabled={isExportingPDF}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
             >
               {isExportingPDF ? (
                 <>
@@ -86,7 +86,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
                 </>
               ) : (
                 <>
-                  📄 Exporter PDF
+                  Exporter PDF
                 </>
               )}
             </motion.button>
@@ -104,7 +104,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
         {/* Erreur PDF */}
         {pdfError && (
           <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            ⚠️ {pdfError}
+            {pdfError}
           </div>
         )}
 
@@ -202,19 +202,22 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
                       })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => toggleExpand(index)}
-                        className="text-primary-600 hover:text-primary-900 font-medium flex items-center gap-1 transition-colors"
+                    <button
+                      onClick={() => toggleExpand(index)}
+                      className="text-primary-600 hover:text-primary-900 font-medium flex items-center gap-2 transition-colors"
+                    >
+                      <motion.svg
+                        animate={{ rotate: expandedIndex === index ? 90 : 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                       >
-                        <motion.span
-                          animate={{ rotate: expandedIndex === index ? 90 : 0 }}
-                          transition={{ duration: 0.3, ease: "easeInOut" }}
-                          className="inline-block"
-                        >
-                          ►
-                        </motion.span>
-                        {expandedIndex === index ? 'Masquer' : 'Voir plus'}
-                      </button>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </motion.svg>
+                      {expandedIndex === index ? 'Masquer' : 'Voir plus'}
+                    </button>
                     </td>
                   </tr>
                   
@@ -266,7 +269,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
                                 >
                                   <div>
                                     <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                      📖 Qu'est-ce que c'est ?
+                                      Qu'est-ce que c'est ?
                                     </h4>
                                     <p className="text-sm text-gray-600 leading-relaxed">
                                       {result.explanation}
@@ -278,7 +281,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
                                     result.status === 'bas' ? 'bg-orange-50' : 'bg-red-50'
                                   }`}>
                                     <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                      💡 Recommandation
+                                      Recommandation
                                     </h4>
                                     <p className="text-sm text-gray-700 leading-relaxed">
                                       {result.advice}
@@ -309,7 +312,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
           </div>
           <div className="ml-3">
             <p className="text-sm text-yellow-700">
-              <strong>⚕️ Avertissement médical :</strong> Ces informations sont à but éducatif uniquement. 
+              <strong>Avertissement médical :</strong> Ces informations sont à but éducatif uniquement. 
               Elles ne remplacent pas l'avis d'un professionnel de santé. Consultez toujours votre médecin 
               pour l'interprétation de vos résultats et tout traitement.
             </p>

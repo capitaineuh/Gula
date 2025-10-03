@@ -74,7 +74,7 @@ export default function UploadForm({ onDataParsed }: UploadFormProps) {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-        📤 Importer votre bilan sanguin
+        Importer votre bilan sanguin
       </h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -108,7 +108,7 @@ export default function UploadForm({ onDataParsed }: UploadFormProps) {
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            ⚠️ {error}
+            {error}
           </div>
         )}
 
