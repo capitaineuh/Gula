@@ -10,7 +10,7 @@ from typing import Generator
 # Récupérer l'URL de la base de données depuis les variables d'environnement
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://healer_user:healer_password@db:5432/healer_db"
+    "postgresql://gula_user:gula_password@db:5432/gula_db"
 )
 
 # Créer le moteur SQLAlchemy avec pooling pour de meilleures performances

@@ -4,6 +4,7 @@ Point d'entrée principal de l'application FastAPI
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
+from app.api.auth_routes import auth_router
 from app.database.connection import engine, SessionLocal
 from app.models import base
 from app.database.seed import seed_biomarkers
@@ -23,7 +24,7 @@ finally:
     db.close()
 
 app = FastAPI(
-    title="Healer API",
+    title="Gula API",
     description="API pour l'analyse de bilans sanguins",
     version="1.0.0"
 )
@@ -39,13 +40,14 @@ app.add_middleware(
 
 # Inclure les routes
 app.include_router(router, prefix="/api")
+app.include_router(auth_router, prefix="/auth")
 
 
 @app.get("/")
 async def root():
     """Point de terminaison racine pour vérifier que l'API fonctionne"""
     return {
-        "message": "Bienvenue sur l'API Healer",
+        "message": "Bienvenue sur l'API Gula",
         "status": "online",
         "version": "1.0.0"
     }

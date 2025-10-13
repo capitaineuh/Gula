@@ -8,7 +8,7 @@ param(
 
 function Show-Help {
     Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Blue
-    Write-Host "  Healer - Commandes de linting et formatage" -ForegroundColor Green
+    Write-Host "  Gula - Commandes de linting et formatage" -ForegroundColor Green
     Write-Host "════════════════════════════════════════════════════════════" -ForegroundColor Blue
     Write-Host ""
     Write-Host "Usage: .\lint.ps1 [commande]" -ForegroundColor Yellow
@@ -37,7 +37,7 @@ function Lint-Frontend {
 
 function Lint-Backend {
     Write-Host "🔍 Vérification du backend (Python + Flake8)..." -ForegroundColor Blue
-    docker exec healer-backend flake8 app/
+    docker exec gula-backend flake8 app/
     if ($LASTEXITCODE -ne 0) {
         Write-Host "⚠️  Installez les dépendances de dev avec '.\lint.ps1 install-deps' si flake8 n'est pas trouvé" -ForegroundColor Yellow
     }
@@ -52,11 +52,11 @@ function Format-Frontend {
 
 function Format-Backend {
     Write-Host "✨ Formatage du backend (Black + isort)..." -ForegroundColor Green
-    docker exec healer-backend black app/
+    docker exec gula-backend black app/
     if ($LASTEXITCODE -ne 0) {
         Write-Host "⚠️  Installez les dépendances de dev avec '.\lint.ps1 install-deps' si black n'est pas trouvé" -ForegroundColor Yellow
     }
-    docker exec healer-backend isort app/
+    docker exec gula-backend isort app/
     if ($LASTEXITCODE -ne 0) {
         Write-Host "⚠️  Installez les dépendances de dev avec '.\lint.ps1 install-deps' si isort n'est pas trouvé" -ForegroundColor Yellow
     }
@@ -69,7 +69,7 @@ function Install-Deps {
     npm install
     Pop-Location
     Write-Host "Backend..." -ForegroundColor Cyan
-    docker exec healer-backend pip install black flake8 isort mypy
+    docker exec gula-backend pip install black flake8 isort mypy
     Write-Host "✅ Dépendances installées" -ForegroundColor Green
 }
 

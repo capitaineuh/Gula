@@ -63,11 +63,30 @@ export default function Home() {
     try {
       const exampleData: ParsedData = {
         biomarkers: {
-          hemoglobine: 13.2,
-          cholesterol_total: 2.3,
-          vitamine_d: 18,
-          glucose: 0.95,
-          fer_serique: 85
+          hemoglobine: 12.0,
+          cholesterol_total: 2.2,
+          cholesterol_hdl: 0.35,
+          cholesterol_ldl: 1.8,
+          triglycerides: 1.8,
+          vitamine_d: 22,
+          vitamine_b12: 180,
+          vitamine_b9: 2.5,
+          vitamine_c: 3.0,
+          glucose: 1.15,
+          fer_serique: 55,
+          ferritine: 20,
+          calcium: 88,
+          magnesium: 16,
+          potassium: 3.2,
+          creatinine: 14.0,
+          uree: 0.48,
+          leucocytes: 11.0,
+          plaquettes: 380,
+          tsh: 4.5,
+          transaminases_alat: 48,
+          transaminases_asat: 52,
+          gamma_gt: 62,
+          crp: 18
         }
       }
 
@@ -107,7 +126,7 @@ export default function Home() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
               >
-                Healer
+                Gula
               </motion.h1>
               <motion.button
                 initial={{ opacity: 0, x: 20 }}
@@ -230,7 +249,7 @@ export default function Home() {
                 className="text-center mb-16"
               >
                 <h3 className="text-4xl font-bold text-gray-900 mb-4">
-                  Pourquoi Choisir Healer ?
+                  Pourquoi Choisir Gula ?
                 </h3>
                 <p className="text-lg text-gray-600 max-w-3xl mx-auto">
                   Notre plateforme offre une analyse approfondie de vos analyses sanguines, vous aidant à comprendre votre santé et à prendre des décisions éclairées.
@@ -301,7 +320,7 @@ export default function Home() {
                 </p>
               </div>
               <p className="text-center text-sm text-gray-500">
-                © 2024 Healer. Tous droits réservés.
+                © 2024 Gula. Tous droits réservés.
               </p>
             </div>
           </footer>

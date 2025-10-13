@@ -2,36 +2,36 @@ services:
   # Base de données PostgreSQL
   db:
     image: postgres:15-alpine
-    container_name: healer-db
+    container_name: gula-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-healer_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-healer_password}
-      POSTGRES_DB: ${POSTGRES_DB:-healer_db}
+      POSTGRES_USER: ${POSTGRES_USER:-gula_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gula_password}
+      POSTGRES_DB: ${POSTGRES_DB:-gula_db}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d  # Scripts d'initialisation si nécessaire
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U healer_user -d healer_db"]
+      test: ["CMD-SHELL", "pg_isready -U gula_user -d gula_db"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - healer-network
+      - gula-network
 
   # Backend FastAPI
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: healer-backend
+    container_name: gula-backend
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-healer_user}:${POSTGRES_PASSWORD:-healer_password}@db:5432/${POSTGRES_DB:-healer_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gula_user}:${POSTGRES_PASSWORD:-gula_password}@db:5432/${POSTGRES_DB:-gula_db}
       ENV: ${ENV:-development}
       DEBUG: ${DEBUG:-True}
     volumes:
@@ -40,7 +40,7 @@ services:
       db:
         condition: service_healthy
     networks:
-      - healer-network
+      - gula-network
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   # Frontend Next.js
@@ -48,7 +48,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev  # Utiliser Dockerfile.dev pour le développement
-    container_name: healer-frontend
+    container_name: gula-frontend
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -63,17 +63,17 @@ services:
     depends_on:
       - backend
     networks:
-      - healer-network
+      - gula-network
 
 # Volumes persistants
 volumes:
   postgres_data:
     driver: local
-    name: healer-postgres-data
+    name: gula-postgres-data
 
 # Réseau interne
 networks:
-  healer-network:
+  gula-network:
     driver: bridge
-    name: healer-network
+    name: gula-network
 

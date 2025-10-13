@@ -8,7 +8,7 @@ NC=\033[0m # No Color
 
 help: ## Afficher l'aide
 	@echo "$(BLUE)════════════════════════════════════════════════════════════$(NC)"
-	@echo "$(GREEN)  Healer - Commandes de développement$(NC)"
+	@echo "$(GREEN)  Gula - Commandes de développement$(NC)"
 	@echo "$(BLUE)════════════════════════════════════════════════════════════$(NC)"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(YELLOW)%-25s$(NC) %s\n", $$1, $$2}'
@@ -38,13 +38,13 @@ logs: ## Afficher les logs de tous les services
 	docker-compose logs -f
 
 logs-backend: ## Afficher les logs du backend
-	docker logs healer-backend -f
+	docker logs gula-backend -f
 
 logs-frontend: ## Afficher les logs du frontend
-	docker logs healer-frontend -f
+	docker logs gula-frontend -f
 
 logs-db: ## Afficher les logs de la base de données
-	docker logs healer-db -f
+	docker logs gula-db -f
 
 # ═══════════════════════════════════════════════════════════
 # LINTING - Vérification du code
@@ -62,7 +62,7 @@ lint-frontend: ## Vérifier la syntaxe du frontend
 
 lint-backend: ## Vérifier la syntaxe du backend
 	@echo "$(BLUE)🔍 Vérification du backend (Python + Flake8)...$(NC)"
-	docker exec healer-backend flake8 app/ || echo "$(YELLOW)⚠️  Installez les dépendances de dev avec 'make install-lint-deps' si flake8 n'est pas trouvé$(NC)"
+	docker exec gula-backend flake8 app/ || echo "$(YELLOW)⚠️  Installez les dépendances de dev avec 'make install-lint-deps' si flake8 n'est pas trouvé$(NC)"
 
 # ═══════════════════════════════════════════════════════════
 # FORMATAGE - Auto-formatage du code
@@ -79,8 +79,8 @@ format-frontend: ## Formater le code du frontend
 
 format-backend: ## Formater le code du backend
 	@echo "$(GREEN)✨ Formatage du backend (Black + isort)...$(NC)"
-	docker exec healer-backend black app/ || echo "$(YELLOW)⚠️  Installez les dépendances de dev avec 'make install-lint-deps' si black n'est pas trouvé$(NC)"
-	docker exec healer-backend isort app/ || echo "$(YELLOW)⚠️  Installez les dépendances de dev avec 'make install-lint-deps' si isort n'est pas trouvé$(NC)"
+	docker exec gula-backend black app/ || echo "$(YELLOW)⚠️  Installez les dépendances de dev avec 'make install-lint-deps' si black n'est pas trouvé$(NC)"
+	docker exec gula-backend isort app/ || echo "$(YELLOW)⚠️  Installez les dépendances de dev avec 'make install-lint-deps' si isort n'est pas trouvé$(NC)"
 
 # ═══════════════════════════════════════════════════════════
 # VÉRIFICATIONS COMPLÈTES
@@ -101,7 +101,7 @@ install-frontend-deps: ## Installer les dépendances frontend
 
 install-lint-deps: ## Installer les outils de linting dans le backend
 	@echo "$(GREEN)📦 Installation des outils de linting backend...$(NC)"
-	docker exec healer-backend pip install black flake8 isort mypy
+	docker exec gula-backend pip install black flake8 isort mypy
 
 # ═══════════════════════════════════════════════════════════
 # BASE DE DONNÉES
@@ -114,14 +114,14 @@ db-reset: ## Réinitialiser la base de données (ATTENTION: supprime toutes les 
 	@echo "$(GREEN)✅ Base de données réinitialisée$(NC)"
 
 db-shell: ## Ouvrir un shell PostgreSQL
-	docker exec -it healer-db psql -U healer_user -d healer_db
+	docker exec -it gula-db psql -U gula_user -d gula_db
 
 # ═══════════════════════════════════════════════════════════
 # TESTS
 # ═══════════════════════════════════════════════════════════
 
 test-backend: ## Exécuter les tests backend
-	docker exec healer-backend pytest
+	docker exec gula-backend pytest
 
 test-all: ## Exécuter tous les tests
 	@$(MAKE) test-backend

@@ -1,4 +1,4 @@
-# 🩺 Healer - Plateforme d'Analyse de Bilans Sanguins
+# 🩺 Gula - Plateforme d'Analyse de Bilans Sanguins
 
 Plateforme éducative pour analyser et vulgariser les résultats de bilans sanguins, avec comparaison aux valeurs normales et recommandations générales.
 
@@ -47,7 +47,7 @@ Optionnel pour développement sans Docker :
 
 ```bash
 git clone <votre-repo>
-cd healer
+cd gula
 ```
 
 ### 2. Configuration des variables d'environnement
@@ -61,9 +61,9 @@ cp .env.example .env
 Éditer le fichier `.env` selon vos besoins :
 
 ```env
-POSTGRES_USER=healer_user
-POSTGRES_PASSWORD=healer_password
-POSTGRES_DB=healer_db
+POSTGRES_USER=gula_user
+POSTGRES_PASSWORD=gula_password
+POSTGRES_DB=gula_db
 ENV=development
 DEBUG=True
 NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -103,7 +103,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ## 📂 Structure du projet
 
 ```
-healer/
+gula/
 ├── backend/                  # Backend FastAPI
 │   ├── app/
 │   │   ├── api/             # Routes et endpoints
@@ -187,17 +187,17 @@ docker-compose exec frontend npm install <package>
 
 **Accéder à PostgreSQL :**
 ```bash
-docker-compose exec db psql -U healer_user -d healer_db
+docker-compose exec db psql -U gula_user -d gula_db
 ```
 
 **Backup de la base :**
 ```bash
-docker-compose exec db pg_dump -U healer_user healer_db > backup.sql
+docker-compose exec db pg_dump -U gula_user gula_db > backup.sql
 ```
 
 **Restaurer un backup :**
 ```bash
-docker-compose exec -T db psql -U healer_user healer_db < backup.sql
+docker-compose exec -T db psql -U gula_user gula_db < backup.sql
 ```
 
 ## 🧪 Tests

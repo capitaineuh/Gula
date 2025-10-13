@@ -2,5 +2,9 @@ biomarqueur,valeur
 hemoglobine,13.2
 cholesterol_total,2.3
 vitamine_d,18
-
-
+glucose,0.95
+fer_serique,85
+vitamine_b12,300
+cholesterol_hdl,0.45
+cholesterol_ldl,1.5
+triglycerides,1.2

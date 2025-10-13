@@ -1,4 +1,4 @@
 """
-Package principal de l'application Healer
+Package principal de l'application Gula
 """
 

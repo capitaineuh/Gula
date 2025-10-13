@@ -1,4 +1,4 @@
--- Script d'initialisation de la base de données Healer
+-- Script d'initialisation de la base de données Gula
 -- Ce script crée les tables si elles n'existent pas
 
 -- Créer la table biomarkers

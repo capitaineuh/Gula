@@ -160,7 +160,7 @@ async def export_pdf(
         pdf_buffer = generate_pdf_report(results_dict)
         
         # Créer un nom de fichier avec la date
-        filename = f"healer_analyse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        filename = f"gula_analyse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         
         # Retourner le PDF en tant que fichier téléchargeable
         return StreamingResponse(

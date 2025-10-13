@@ -1,6 +1,6 @@
-# 🔍 Guide de Linting et Formatage - Healer
+# 🔍 Guide de Linting et Formatage - Gula
 
-Ce document explique comment utiliser les outils de linting et de formatage du code pour le projet Healer.
+Ce document explique comment utiliser les outils de linting et de formatage du code pour le projet Gula.
 
 ## 📋 Table des matières
 
@@ -201,7 +201,7 @@ Pour intégrer le linting dans votre pipeline CI/CD, ajoutez ces étapes :
   run: cd frontend && npm run type-check
 
 - name: Lint Backend
-  run: docker exec healer-backend flake8 app/
+  run: docker exec gula-backend flake8 app/
 ```
 
 ---

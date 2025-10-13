@@ -109,7 +109,7 @@ export const downloadPDF = async (analysisResults: AnalyzeResponse): Promise<voi
     
     // Nom du fichier avec date
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
-    link.download = `healer_analyse_${timestamp}.pdf`
+    link.download = `gula_analyse_${timestamp}.pdf`
     
     // Déclencher le téléchargement
     document.body.appendChild(link)

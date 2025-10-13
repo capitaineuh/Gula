@@ -117,7 +117,7 @@ class PDFGenerator:
         elements = []
         
         # Logo/Titre
-        title = Paragraph("🩺 Healer - Analyse de Bilan Sanguin", self.styles['CustomTitle'])
+        title = Paragraph("🩺 Gula - Analyse de Bilan Sanguin", self.styles['CustomTitle'])
         elements.append(title)
         elements.append(Spacer(1, 0.3*cm))
         
@@ -316,7 +316,7 @@ class PDFGenerator:
         footer_text = f"""
         <br/>
         ────────────────────────────────────────────────────────────────<br/>
-        <i>Document généré par Healer v1.0.0 - Plateforme éducative d'analyse de bilans sanguins</i><br/>
+        <i>Document généré par Gula v1.0.0 - Plateforme éducative d'analyse de bilans sanguins</i><br/>
         <i>Date de génération : {datetime.now().strftime('%d/%m/%Y à %H:%M:%S')}</i>
         """
         

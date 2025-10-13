@@ -5,7 +5,7 @@ services:
   # Base de données PostgreSQL
   db:
     image: postgres:15-alpine
-    container_name: healer-db-prod
+    container_name: gula-db-prod
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -19,14 +19,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - healer-network-prod
+      - gula-network-prod
 
   # Backend FastAPI
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: healer-backend-prod
+    container_name: gula-backend-prod
     restart: always
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
@@ -36,7 +36,7 @@ services:
       db:
         condition: service_healthy
     networks:
-      - healer-network-prod
+      - gula-network-prod
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 
   # Frontend Next.js
@@ -44,7 +44,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile  # Utiliser le Dockerfile de production
-    container_name: healer-frontend-prod
+    container_name: gula-frontend-prod
     restart: always
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
@@ -52,12 +52,12 @@ services:
     depends_on:
       - backend
     networks:
-      - healer-network-prod
+      - gula-network-prod
 
   # Nginx reverse proxy (optionnel pour la production)
   nginx:
     image: nginx:alpine
-    container_name: healer-nginx
+    container_name: gula-nginx
     restart: always
     ports:
       - "80:80"
@@ -69,15 +69,15 @@ services:
       - frontend
       - backend
     networks:
-      - healer-network-prod
+      - gula-network-prod
 
 volumes:
   postgres_data_prod:
     driver: local
-    name: healer-postgres-data-prod
+    name: gula-postgres-data-prod
 
 networks:
-  healer-network-prod:
+  gula-network-prod:
     driver: bridge
-    name: healer-network-prod
+    name: gula-network-prod
 
