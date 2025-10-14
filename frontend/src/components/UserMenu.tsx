@@ -1,50 +1,72 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function UserMenu() {
-  const { data: session, status } = useSession();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  if (status === "loading") {
+  useEffect(() => {
+    // Vérifier si l'utilisateur est connecté
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      setUser(JSON.parse(userStr));
+    }
+    setLoading(false);
+  }, []);
+
+  const handleSignOut = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+    setUser(null);
+    router.push("/");
+  };
+
+  if (loading) {
     return (
       <div className="flex items-center space-x-4">
-        <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+        <div className="h-8 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
       </div>
     );
   }
 
-  if (session) {
+  if (user) {
     return (
-      <div className="flex items-center space-x-4">
-        <span className="text-sm text-gray-700">
-          {session.user?.email}
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-600 hidden sm:inline">
+          {user.email}
         </span>
-        <button
-          onClick={() => signOut()}
-          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        <motion.button
+          onClick={handleSignOut}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors shadow-sm"
         >
           Déconnexion
-        </button>
+        </motion.button>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center space-x-4">
-      <Link
-        href="/auth/signin"
-        className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-      >
-        Se connecter
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+    >
+      <Link href="/auth/signin">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors shadow-sm"
+        >
+          Connexion
+        </motion.button>
       </Link>
-      <Link
-        href="/auth/signup"
-        className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        S'inscrire
-      </Link>
-    </div>
+    </motion.div>
   );
 }
 

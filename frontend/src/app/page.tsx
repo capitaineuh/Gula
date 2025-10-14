@@ -4,6 +4,7 @@ import { useState, ChangeEvent } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ResultsDashboard, { AnalysisResults } from '@/components/ResultsDashboard'
 import SkeletonLoader from '@/components/SkeletonLoader'
+import UserMenu from '@/components/UserMenu'
 import { analyzeBloodTest } from '@/services/api'
 import { parseCSV, parseJSON, validateParsedData, ParsedData } from '@/services/csvParser'
 
@@ -128,15 +129,7 @@ export default function Home() {
               >
                 Gula
               </motion.h1>
-              <motion.button
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors shadow-sm"
-              >
-                Connexion
-              </motion.button>
+              <UserMenu />
             </div>
           </header>
 

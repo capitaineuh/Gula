@@ -1,10 +1,12 @@
 """
 Point d'entrée principal de l'application FastAPI
 """
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
-from app.api.auth_routes import auth_router
+from app.api.custom_auth_routes import router as custom_auth_router
+from app.api.oauth_routes import router as oauth_router
 from app.database.connection import engine, SessionLocal
 from app.models import base
 from app.database.seed import seed_biomarkers
@@ -30,17 +32,31 @@ app = FastAPI(
 )
 
 # Configuration CORS pour le frontend
+from app.config import ALLOWED_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # URL du frontend
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "Accept",
+        "Origin",
+        "User-Agent",
+        "DNT",
+        "Cache-Control",
+        "X-Requested-With",
+    ],
+    expose_headers=["Content-Length", "Content-Range"],
+    max_age=600,
 )
 
 # Inclure les routes
 app.include_router(router, prefix="/api")
-app.include_router(auth_router, prefix="/auth")
+app.include_router(custom_auth_router, prefix="/auth", tags=["auth"])
+app.include_router(oauth_router, prefix="/auth", tags=["oauth"])
 
 
 @app.get("/")
