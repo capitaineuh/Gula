@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import ResultsDashboard, { AnalysisResults } from '@/components/ResultsDashboard'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import UserMenu from '@/components/UserMenu'
-import { analyzeBloodTest } from '@/services/api'
+import { analyzeBloodTest, analyzePDF } from '@/services/api'
 import { parseCSV, parseJSON, validateParsedData, ParsedData } from '@/services/csvParser'
 
 export default function Home() {
@@ -13,6 +13,7 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string>('')
   const [file, setFile] = useState<File | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<string>('')
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -30,30 +31,50 @@ export default function Home() {
 
     setIsAnalyzing(true)
     setError('')
+    setUploadProgress('')
 
     try {
-      const text = await file.text()
-      let parsedData: ParsedData
+      let analysisResults
 
-      if (file.name.endsWith('.csv')) {
-        parsedData = parseCSV(text)
-      } else if (file.name.endsWith('.json')) {
-        parsedData = parseJSON(text)
+      // Traitement selon le type de fichier
+      if (file.name.endsWith('.pdf')) {
+        // Gérer les PDFs avec l'API backend + Gemini
+        setUploadProgress('📄 Envoi du PDF au serveur...')
+        
+        analysisResults = await analyzePDF(file)
+        
+        setUploadProgress('🤖 Extraction des données avec IA...')
+        
+      } else if (file.name.endsWith('.csv') || file.name.endsWith('.json')) {
+        // Parser CSV/JSON localement puis envoyer à l'API
+        const text = await file.text()
+        let parsedData: ParsedData
+
+        if (file.name.endsWith('.csv')) {
+          parsedData = parseCSV(text)
+        } else {
+          parsedData = parseJSON(text)
+        }
+
+        validateParsedData(parsedData)
+
+        analysisResults = await analyzeBloodTest({
+          biomarkers: parsedData.biomarkers
+        })
+        
       } else {
-        throw new Error('Format de fichier non supporté. Utilisez CSV ou JSON.')
+        throw new Error('Format de fichier non supporté. Utilisez PDF, CSV ou JSON.')
       }
 
-      validateParsedData(parsedData)
-
-      const analysisResults = await analyzeBloodTest({
-        biomarkers: parsedData.biomarkers
-      })
       setResults(analysisResults)
+      setUploadProgress('✅ Analyse terminée !')
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'analyse')
       console.error('Erreur d\'analyse:', err)
     } finally {
       setIsAnalyzing(false)
+      setTimeout(() => setUploadProgress(''), 3000)
     }
   }
 
@@ -170,7 +191,7 @@ export default function Home() {
                   <input
                     id="file-upload"
                     type="file"
-                    accept=".csv,.json"
+                    accept=".pdf,.csv,.json"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -199,12 +220,24 @@ export default function Home() {
                   <span className="font-semibold">{file.name}</span> sélectionné
                   <motion.button
                     onClick={handleAnalyze}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="ml-4 px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors"
+                    disabled={isAnalyzing}
+                    whileHover={{ scale: isAnalyzing ? 1 : 1.05 }}
+                    whileTap={{ scale: isAnalyzing ? 1 : 0.95 }}
+                    className="ml-4 px-6 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
-                    Analyser maintenant
+                    {isAnalyzing ? 'Analyse en cours...' : 'Analyser maintenant'}
                   </motion.button>
+                </motion.div>
+              )}
+
+              {/* Upload Progress */}
+              {uploadProgress && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 text-sm text-emerald-600 font-medium"
+                >
+                  {uploadProgress}
                 </motion.div>
               )}
 

@@ -36,8 +36,10 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-gula_user}:${POSTGRES_PASSWORD:-gula_password}@db:5432/${POSTGRES_DB:-gula_db}
       ENV: ${ENV:-development}
       DEBUG: ${DEBUG:-True}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     volumes:
       - ./backend/app:/app/app  # Hot-reload en développement
+      - ./backend/.env:/app/.env:ro
     depends_on:
       db:
         condition: service_healthy

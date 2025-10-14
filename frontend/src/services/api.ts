@@ -83,6 +83,21 @@ export const analyzeBloodTest = async (data: AnalyzeRequest): Promise<AnalyzeRes
   return response.data
 }
 
+// Analyser un bilan sanguin à partir d'un PDF (avec Gemini AI)
+export const analyzePDF = async (file: File): Promise<AnalyzeResponse> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  const response = await axios.post(`${API_URL}/api/analyze-pdf`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    timeout: 60000, // 60 secondes pour laisser le temps à Gemini de traiter
+  })
+  
+  return response.data
+}
+
 // Récupérer la liste des biomarqueurs
 export const getBiomarkers = async (): Promise<any> => {
   const response = await apiClient.get('/api/biomarkers')
