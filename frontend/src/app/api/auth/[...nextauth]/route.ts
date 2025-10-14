@@ -5,7 +5,7 @@ import AppleProvider from "next-auth/providers/apple";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     // Authentification par email/mot de passe
     CredentialsProvider({
