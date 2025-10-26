@@ -78,6 +78,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
         localStorage.setItem("access_token", loginData.access_token);
         localStorage.setItem("user", JSON.stringify(loginData.user));
         
+        // Déclencher l'événement de changement d'auth
+        window.dispatchEvent(new Event("auth-change"));
+        
         router.push("/");
       } else {
         // Connexion via l'API FastAPI
@@ -103,6 +106,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
         // Stocker le token et les infos utilisateur
         localStorage.setItem("access_token", loginData.access_token);
         localStorage.setItem("user", JSON.stringify(loginData.user));
+        
+        // Déclencher l'événement de changement d'auth
+        window.dispatchEvent(new Event("auth-change"));
         
         router.push("/");
       }

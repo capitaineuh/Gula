@@ -1,7 +1,7 @@
 """
 Routes d'authentification personnalisées pour compatibilité avec SQLAlchemy synchrone
 """
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Header
 from sqlalchemy.orm import Session
 import bcrypt
 from pydantic import BaseModel, EmailStr
@@ -169,45 +169,73 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
         )
 
 
-@router.get("/users/me", response_model=UserResponse)
-def get_current_user(
-    authorization: str = Depends(lambda: None),
+def get_current_user_dep(
+    authorization: str | None = Header(default=None),
     db: Session = Depends(get_db)
 ):
     """
-    Récupérer l'utilisateur actuel à partir du token JWT
+    Dépendance réutilisable pour récupérer l'utilisateur courant via JWT Bearer.
+    Compatible avec les tokens signés par JWT_SECRET.
     """
     from jose import jwt, JWTError
-    from fastapi import Header
-    
+    from app.config import JWT_SECRET
+
+    logger = logging.getLogger(__name__)
+
     if not authorization:
+        logger.warning("[AUTH] Authorization header manquant")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Non authentifié"
         )
-    
+
     try:
-        from app.config import JWT_SECRET
-        
         # Extraire le token
-        token = authorization.replace("Bearer ", "")
-        
+        token = authorization.replace("Bearer ", "").strip()
+        if not token:
+            logger.warning("[AUTH] Token Bearer vide")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token manquant"
+            )
+
         # Décoder le token
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-        user_id = int(payload.get("sub"))
-        
+        sub = payload.get("sub")
+        if sub is None:
+            logger.warning("[AUTH] Claim 'sub' absent dans le token")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
+
+        user_id = int(sub)
+
         # Récupérer l'utilisateur
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
+            logger.warning("[AUTH] Utilisateur id=%s non trouvé", user_id)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Utilisateur non trouvé"
             )
-        
+
+        if not user.is_active:
+            logger.warning("[AUTH] Utilisateur id=%s inactif", user_id)
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Compte inactif")
+
         return user
-        
-    except JWTError:
+
+    except JWTError as e:
+        logger.warning("[AUTH] JWTError: %s", e)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token invalide"
         )
+
+
+@router.get("/users/me", response_model=UserResponse)
+def get_current_user(
+    user: User = Depends(get_current_user_dep)
+):
+    """
+    Endpoint qui renvoie l'utilisateur courant (utilise la dépendance ci-dessus).
+    """
+    return user

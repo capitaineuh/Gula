@@ -13,10 +13,11 @@ from fastapi_users.db import SQLAlchemyUserDatabase
 from sqlalchemy.orm import Session
 
 from app.models.auth import User
+from app.config import JWT_SECRET, JWT_EXPIRATION
 from app.database.connection import get_db
 
-# Secret pour les JWT (à mettre dans les variables d'environnement en production)
-SECRET = "YOUR_SECRET_KEY_CHANGE_THIS_IN_PRODUCTION_USE_OPENSSL_RAND_HEX_32"
+# Secret pour les JWT (aligné avec la config de l'appli)
+SECRET = JWT_SECRET
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
@@ -65,7 +66,8 @@ def get_jwt_strategy() -> JWTStrategy:
     """
     Stratégie JWT pour l'authentification
     """
-    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+    # Aligner la durée de vie avec la config globale
+    return JWTStrategy(secret=SECRET, lifetime_seconds=JWT_EXPIRATION)
 
 
 # Backend d'authentification JWT

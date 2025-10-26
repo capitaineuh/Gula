@@ -13,11 +13,21 @@ export default function OAuthSuccessPage() {
   useEffect(() => {
     const token = searchParams.get("token");
     const email = searchParams.get("email");
+    const id = searchParams.get("id");
+    const oauthProvider = searchParams.get("oauth_provider");
 
     if (token && email) {
-      // Stocker le token et l'email dans localStorage
+      // Stocker le token et les informations utilisateur complètes dans localStorage
       localStorage.setItem("access_token", token);
-      localStorage.setItem("user", JSON.stringify({ email }));
+      localStorage.setItem("user", JSON.stringify({ 
+        email,
+        id: id ? parseInt(id) : undefined,
+        is_oauth: true,
+        oauth_provider: oauthProvider || "google"
+      }));
+      
+      // Déclencher l'événement de changement d'auth
+      window.dispatchEvent(new Event("auth-change"));
       
       setStatus("success");
       setMessage("Connexion réussie !");

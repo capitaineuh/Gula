@@ -3,26 +3,72 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function UserMenu() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est connecté
+    // Fonction pour vérifier et charger l'utilisateur
+    const checkUser = () => {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          setUser(JSON.parse(userStr));
+        } catch (e) {
+          console.error("Erreur lors du parsing des données utilisateur:", e);
+          localStorage.removeItem("user");
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+
+    // Vérifier au chargement
+    checkUser();
+
+    // Écouter les événements de storage (changements dans d'autres onglets)
+    window.addEventListener("storage", checkUser);
+
+    // Créer un événement personnalisé pour les changements de connexion
+    const handleAuthChange = () => {
+      checkUser();
+    };
+    window.addEventListener("auth-change", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("storage", checkUser);
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, []);
+
+  // Recharger quand la route change (après redirection)
+  useEffect(() => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
-      setUser(JSON.parse(userStr));
+      try {
+        setUser(JSON.parse(userStr));
+      } catch (e) {
+        console.error("Erreur lors du parsing des données utilisateur:", e);
+        localStorage.removeItem("user");
+        setUser(null);
+      }
+    } else {
+      setUser(null);
     }
-    setLoading(false);
-  }, []);
+  }, [pathname]);
 
   const handleSignOut = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
     setUser(null);
+    // Déclencher l'événement de changement d'auth
+    window.dispatchEvent(new Event("auth-change"));
     router.push("/");
   };
 
@@ -37,9 +83,15 @@ export default function UserMenu() {
   if (user) {
     return (
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-600 hidden sm:inline">
-          {user.email}
-        </span>
+        <Link href="/profile">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-6 py-2 bg-white border border-emerald-600 text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors shadow-sm"
+          >
+            Mon profil
+          </motion.button>
+        </Link>
         <motion.button
           onClick={handleSignOut}
           whileHover={{ scale: 1.05 }}

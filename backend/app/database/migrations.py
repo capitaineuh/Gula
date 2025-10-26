@@ -8,11 +8,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def run_migrations():
-    """
-    Exécuter les migrations nécessaires pour mettre à jour le schéma
-    Cette fonction vérifie et ajoute les colonnes manquantes si nécessaire
-    """
+def migrate_biomarkers_table():
+    """Migration pour la table biomarkers"""
     inspector = inspect(engine)
     
     # Vérifier si la table biomarkers existe
@@ -34,7 +31,7 @@ def run_migrations():
     missing_columns = required_columns - existing_columns
     
     if missing_columns:
-        logger.info(f"Colonnes manquantes détectées : {missing_columns}")
+        logger.info(f"Colonnes manquantes détectées dans biomarkers : {missing_columns}")
         
         # Mapper les anciennes colonnes vers les nouvelles
         column_mapping = {
@@ -67,4 +64,76 @@ def run_migrations():
                         except Exception as e:
                             logger.warning(f"Erreur lors du renommage {old_col} -> {new_col}: {e}")
     else:
-        logger.info("Schéma de base de données à jour, aucune migration nécessaire")
+        logger.info("Table biomarkers à jour")
+
+
+def migrate_user_profiles_table():
+    """Migration pour créer la table user_profiles"""
+    inspector = inspect(engine)
+    
+    # Vérifier si la table user_profiles existe déjà
+    if 'user_profiles' in inspector.get_table_names():
+        logger.info("Table user_profiles existe déjà")
+        return
+    
+    logger.info("Création de la table user_profiles...")
+    
+    # SQL pour créer la table user_profiles
+    create_table_sql = """
+    CREATE TABLE IF NOT EXISTS user_profiles (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        
+        -- Informations de base
+        birthdate DATE,
+        biological_sex VARCHAR(20),
+        height FLOAT,
+        weight FLOAT,
+        ethnicity VARCHAR(50),
+        blood_type VARCHAR(10),
+        
+        -- Mode de vie
+        alcohol_consumption VARCHAR(30),
+        tobacco_consumption VARCHAR(30),
+        diet_type VARCHAR(50),
+        medications TEXT,
+        supplements TEXT,
+        physical_activity_level VARCHAR(30),
+        
+        -- Contexte physiologique lors de la prise de sang
+        is_menopause BOOLEAN DEFAULT FALSE,
+        is_pregnant BOOLEAN DEFAULT FALSE,
+        menstrual_cycle_phase VARCHAR(30),
+        blood_test_time VARCHAR(20),
+        blood_test_fasting BOOLEAN DEFAULT FALSE,
+        
+        -- Contexte médical
+        chronic_diseases TEXT,
+        family_history TEXT,
+        recent_infection TEXT,
+        
+        -- Métadonnées
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles(user_id);
+    """
+    
+    try:
+        with engine.connect() as conn:
+            conn.execute(text(create_table_sql))
+            conn.commit()
+            logger.info("Table user_profiles créée avec succès")
+    except Exception as e:
+        logger.error(f"Erreur lors de la création de la table user_profiles: {e}")
+
+
+def run_migrations():
+    """
+    Exécuter toutes les migrations nécessaires pour mettre à jour le schéma
+    """
+    logger.info("Démarrage des migrations...")
+    migrate_biomarkers_table()
+    migrate_user_profiles_table()
+    logger.info("Migrations terminées")

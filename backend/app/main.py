@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.api.custom_auth_routes import router as custom_auth_router
 from app.api.oauth_routes import router as oauth_router
+from app.api.profile_routes import router as profile_router
 from app.database.connection import engine, SessionLocal
 from app.models import base
 from app.database.seed import seed_biomarkers
@@ -57,6 +58,7 @@ app.add_middleware(
 app.include_router(router, prefix="/api")
 app.include_router(custom_auth_router, prefix="/auth", tags=["auth"])
 app.include_router(oauth_router, prefix="/auth", tags=["oauth"])
+app.include_router(profile_router)
 
 
 @app.get("/")
