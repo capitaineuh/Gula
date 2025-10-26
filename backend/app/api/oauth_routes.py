@@ -8,17 +8,31 @@ from app.database.connection import get_db
 from app.models.auth import User
 import os
 import requests
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse, urlunparse
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# URL du frontend (configurable via env)
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
-
 # Détection automatique de l'environnement
 ENV = os.getenv("ENV", "development")
+
+
+def get_frontend_url() -> str:
+    """Déterminer l'URL du frontend de manière robuste.
+    Ordre: FRONTEND_URL > premier ALLOWED_ORIGIN > localhost.
+    """
+    fe = os.getenv("FRONTEND_URL")
+    if fe:
+        return fe.rstrip('/')
+
+    allowed = os.getenv("ALLOWED_ORIGINS", "").split(",")
+    for origin in allowed:
+        origin = origin.strip()
+        if origin and origin != "*":
+            return origin.rstrip('/')
+
+    return "http://localhost:3000"
 
 def get_google_oauth_config(request: Request):
     """
@@ -28,21 +42,36 @@ def get_google_oauth_config(request: Request):
     client_id = os.getenv("GOOGLE_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
     
-    # Déterminer l'URL de redirection automatiquement
-    # 1. Si GOOGLE_REDIRECT_URI est définie, l'utiliser
-    # 2. Sinon, détecter depuis la requête (pour production)
-    # 3. Par défaut, localhost (développement)
-    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
-    
-    if not redirect_uri:
-        # Essayer de détecter depuis les headers de la requête
+    # Déterminer l'URL de redirection automatiquement et éviter localhost en prod
+    redirect_uri_env = os.getenv("GOOGLE_REDIRECT_URI")
+
+    if ENV == "production":
+        # En production, privilégier l'URL détectée depuis la requête
         if request and hasattr(request, 'base_url'):
-            base_url = str(request.base_url).rstrip('/')
+            parsed = urlparse(str(request.base_url))
+            # Forcer https si besoin (proxy)
+            scheme = "https"
+            netloc = parsed.netloc
+            base_url = urlunparse((scheme, netloc, '', '', '', '')).rstrip('/')
             redirect_uri = f"{base_url}/auth/google/callback"
-            logger.info(f"URL de redirection détectée automatiquement: {redirect_uri}")
         else:
-            # Fallback pour développement
-            redirect_uri = "http://localhost:8000/auth/google/callback"
+            # Fallback sur la variable d'env si non localhost
+            if redirect_uri_env and "localhost" not in redirect_uri_env:
+                redirect_uri = redirect_uri_env
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Impossible de déterminer GOOGLE_REDIRECT_URI en production"
+                )
+    else:
+        # En développement: utiliser env si fournie, sinon détecter, sinon localhost
+        redirect_uri = redirect_uri_env
+        if not redirect_uri:
+            if request and hasattr(request, 'base_url'):
+                base_url = str(request.base_url).rstrip('/')
+                redirect_uri = f"{base_url}/auth/google/callback"
+            else:
+                redirect_uri = "http://localhost:8000/auth/google/callback"
     
     return client_id, client_secret, redirect_uri
 
@@ -93,11 +122,11 @@ def google_callback(request: Request, code: str = None, error: str = None, db: S
     """
     if error:
         logger.error(f"Erreur Google OAuth: {error}")
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth/error?error=OAuthSignin")
+        return RedirectResponse(url=f"{get_frontend_url()}/auth/error?error=OAuthSignin")
     
     if not code:
         logger.error("Code d'autorisation manquant")
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth/error?error=OAuthSignin")
+        return RedirectResponse(url=f"{get_frontend_url()}/auth/error?error=OAuthSignin")
     
     try:
         client_id, client_secret, redirect_uri = get_google_oauth_config(request)
@@ -126,7 +155,7 @@ def google_callback(request: Request, code: str = None, error: str = None, db: S
         
         if not token_response.ok:
             logger.error(f"Erreur token Google: {token_response.text}")
-            return RedirectResponse(url=f"{FRONTEND_URL}/auth/error?error=OAuthSignin")
+            return RedirectResponse(url=f"{get_frontend_url()}/auth/error?error=OAuthSignin")
         
         token_json = token_response.json()
         access_token = token_json.get("access_token")
@@ -139,7 +168,7 @@ def google_callback(request: Request, code: str = None, error: str = None, db: S
         
         if not user_response.ok:
             logger.error(f"Erreur récupération profil Google: {user_response.text}")
-            return RedirectResponse(url=f"{FRONTEND_URL}/auth/error?error=OAuthSignin")
+            return RedirectResponse(url=f"{get_frontend_url()}/auth/error?error=OAuthSignin")
         
         user_data = user_response.json()
         email = user_data.get("email")
@@ -147,7 +176,7 @@ def google_callback(request: Request, code: str = None, error: str = None, db: S
         
         if not email:
             logger.error("Email manquant dans les données Google")
-            return RedirectResponse(url=f"{FRONTEND_URL}/auth/error?error=OAuthSignin")
+            return RedirectResponse(url=f"{get_frontend_url()}/auth/error?error=OAuthSignin")
         
         # Vérifier si l'utilisateur existe déjà
         user = db.query(User).filter(User.email == email).first()
@@ -184,12 +213,12 @@ def google_callback(request: Request, code: str = None, error: str = None, db: S
         jwt_token = jwt.encode(to_encode, JWT_SECRET, algorithm="HS256")
         
         # Rediriger vers le frontend avec le token et les données utilisateur
-        success_url = f"{FRONTEND_URL}/auth/oauth-success?token={jwt_token}&email={email}&id={user.id}&oauth_provider=google"
+        success_url = f"{get_frontend_url()}/auth/oauth-success?token={jwt_token}&email={email}&id={user.id}&oauth_provider=google"
         return RedirectResponse(url=success_url)
         
     except Exception as e:
         logger.error(f"Erreur callback Google: {str(e)}", exc_info=True)
-        return RedirectResponse(url=f"{FRONTEND_URL}/auth/error?error=OAuthSignin")
+        return RedirectResponse(url=f"{get_frontend_url()}/auth/error?error=OAuthSignin")
 
 
 @router.get("/apple/login")
@@ -199,4 +228,4 @@ def apple_login():
     """
     # Pour l'instant, rediriger vers une page d'erreur
     # Apple OAuth est plus complexe à implémenter
-    return RedirectResponse(url=f"{FRONTEND_URL}/auth/error?error=OAuthSignin&message=Apple+OAuth+non+implémenté")
+    return RedirectResponse(url=f"{get_frontend_url()}/auth/error?error=OAuthSignin&message=Apple+OAuth+non+implémenté")

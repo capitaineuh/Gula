@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -53,16 +52,17 @@ export default function AuthForm({ mode }: AuthFormProps) {
           return;
         }
 
-        // Connexion automatique après inscription
-        const loginRes = await fetch(`${API_URL}/auth/login`, {
+        // Connexion automatique après inscription (FastAPI-Users JWT)
+        const formData = new URLSearchParams();
+        formData.append("username", email);
+        formData.append("password", password);
+
+        const loginRes = await fetch(`${API_URL}/auth/jwt/login`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
           },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
+          body: formData,
         });
 
         if (!loginRes.ok) {
@@ -73,26 +73,41 @@ export default function AuthForm({ mode }: AuthFormProps) {
         }
 
         const loginData = await loginRes.json();
-        
+
+        // Récupérer les informations utilisateur
+        const meRes = await fetch(`${API_URL}/auth/users/me`, {
+          headers: {
+            Authorization: `Bearer ${loginData.access_token}`,
+          },
+        });
+        if (!meRes.ok) {
+          setError("Connexion réussie mais impossible de récupérer le profil.");
+          setLoading(false);
+          router.push("/");
+          return;
+        }
+        const user = await meRes.json();
+
         // Stocker le token et les infos utilisateur
         localStorage.setItem("access_token", loginData.access_token);
-        localStorage.setItem("user", JSON.stringify(loginData.user));
+        localStorage.setItem("user", JSON.stringify(user));
         
         // Déclencher l'événement de changement d'auth
         window.dispatchEvent(new Event("auth-change"));
         
         router.push("/");
       } else {
-        // Connexion via l'API FastAPI
-        const loginRes = await fetch(`${API_URL}/auth/login`, {
+        // Connexion via FastAPI-Users JWT
+        const formData = new URLSearchParams();
+        formData.append("username", email);
+        formData.append("password", password);
+
+        const loginRes = await fetch(`${API_URL}/auth/jwt/login`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
           },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
+          body: formData,
         });
 
         if (!loginRes.ok) {
@@ -102,10 +117,24 @@ export default function AuthForm({ mode }: AuthFormProps) {
         }
 
         const loginData = await loginRes.json();
-        
+
+        // Récupérer les informations utilisateur
+        const meRes = await fetch(`${API_URL}/auth/users/me`, {
+          headers: {
+            Authorization: `Bearer ${loginData.access_token}`,
+          },
+        });
+        if (!meRes.ok) {
+          setError("Connexion réussie mais impossible de récupérer le profil.");
+          setLoading(false);
+          router.push("/");
+          return;
+        }
+        const user = await meRes.json();
+
         // Stocker le token et les infos utilisateur
         localStorage.setItem("access_token", loginData.access_token);
-        localStorage.setItem("user", JSON.stringify(loginData.user));
+        localStorage.setItem("user", JSON.stringify(user));
         
         // Déclencher l'événement de changement d'auth
         window.dispatchEvent(new Event("auth-change"));
