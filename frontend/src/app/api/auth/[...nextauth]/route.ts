@@ -1,7 +1,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import AppleProvider from "next-auth/providers/apple";
+// Providers OAuth désactivés (gérés par le backend)
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -63,18 +62,6 @@ const authOptions: NextAuthOptions = {
         }
       },
     }),
-
-    // Google OAuth
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
-
-    // Apple OAuth
-    AppleProvider({
-      clientId: process.env.APPLE_CLIENT_ID || "",
-      clientSecret: process.env.APPLE_CLIENT_SECRET || "",
-    }),
   ],
 
   callbacks: {
@@ -85,12 +72,7 @@ const authOptions: NextAuthOptions = {
         token.id = user.id;
       }
 
-      // OAuth (Google/Apple)
-      if (account?.provider === "google" || account?.provider === "apple") {
-        // Ici vous pouvez implémenter la logique pour créer/connecter l'utilisateur via OAuth
-        // avec votre backend FastAPI
-        token.provider = account.provider;
-      }
+      // OAuth côté NextAuth désactivé; géré via backend
 
       return token;
     },

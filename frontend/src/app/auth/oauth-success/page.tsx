@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+// framer-motion retiré pour éviter erreurs d'insertion DOM
 
 export default function OAuthSuccessPage() {
   const router = useRouter();
@@ -44,19 +44,11 @@ export default function OAuthSuccessPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="max-w-md w-full text-center"
-      >
+      <div className="max-w-md w-full text-center">
         <div className="bg-white rounded-xl shadow-lg p-8">
           {status === "loading" && (
             <>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto mb-4"
-              />
+              <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
               <h2 className="text-2xl font-semibold text-gray-800 mb-2">
                 Connexion en cours...
               </h2>
@@ -68,16 +60,11 @@ export default function OAuthSuccessPage() {
 
           {status === "success" && (
             <>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-              </motion.div>
+              </div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-2">
                 Connexion réussie !
               </h2>
@@ -89,16 +76,11 @@ export default function OAuthSuccessPage() {
 
           {status === "error" && (
             <>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </motion.div>
+              </div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-2">
                 Erreur de connexion
               </h2>
@@ -114,7 +96,7 @@ export default function OAuthSuccessPage() {
             </>
           )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
