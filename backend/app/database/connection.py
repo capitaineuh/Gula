@@ -12,11 +12,19 @@ from typing import Generator
 #   1. SUPABASE_URL (ex: variable automatique créée par Vercel/Supabase)
 #   2. DATABASE_URL (pour compatibilité Render / local)
 #   3. Valeur par défaut Docker Compose (dev local)
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-DATABASE_URL = SUPABASE_URL or os.getenv(
+raw_supabase_url = os.getenv("SUPABASE_URL")
+raw_database_url = raw_supabase_url or os.getenv(
     "DATABASE_URL",
     "postgresql://gula_user:gula_password@db:5432/gula_db",
 )
+
+# Normaliser le schéma pour SQLAlchemy :
+# Supabase fournit souvent des URLs en `postgres://...`
+# alors que SQLAlchemy attend `postgresql://...`
+if raw_database_url.startswith("postgres://"):
+    DATABASE_URL = "postgresql://" + raw_database_url[len("postgres://") :]
+else:
+    DATABASE_URL = raw_database_url
 
 # Créer le moteur SQLAlchemy avec pooling pour de meilleures performances
 engine = create_engine(
