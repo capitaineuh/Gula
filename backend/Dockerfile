@@ -16,12 +16,12 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copier le fichier de dépendances
-COPY requirements.txt .
+# Copier le fichier de dépendances (runtime uniquement pour Vercel)
+COPY requirements.runtime.txt ./requirements.runtime.txt
 
 # Installer les dépendances Python
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements.runtime.txt
 
 # Copier le code de l'application
 COPY ./app ./app
