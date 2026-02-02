@@ -7,10 +7,15 @@ from sqlalchemy.pool import QueuePool
 import os
 from typing import Generator
 
-# Récupérer l'URL de la base de données depuis les variables d'environnement
-DATABASE_URL = os.getenv(
+# Récupérer l'URL de la base de données depuis les variables d'environnement.
+# Priorité :
+#   1. SUPABASE_URL (ex: variable automatique créée par Vercel/Supabase)
+#   2. DATABASE_URL (pour compatibilité Render / local)
+#   3. Valeur par défaut Docker Compose (dev local)
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+DATABASE_URL = SUPABASE_URL or os.getenv(
     "DATABASE_URL",
-    "postgresql://gula_user:gula_password@db:5432/gula_db"
+    "postgresql://gula_user:gula_password@db:5432/gula_db",
 )
 
 # Créer le moteur SQLAlchemy avec pooling pour de meilleures performances
@@ -20,7 +25,7 @@ engine = create_engine(
     pool_size=5,
     max_overflow=10,
     pool_pre_ping=True,  # Vérifier la connexion avant utilisation
-    echo=False  # Mettre à True pour debug SQL
+    echo=False,  # Mettre à True pour debug SQL
 )
 
 # Créer une fabrique de sessions

@@ -31,13 +31,15 @@ RUN adduser --disabled-password --gecos '' appuser && \
     chown -R appuser:appuser /app
 USER appuser
 
-# Exposer le port 8000
+# Exposer le port (Vercel fournit $PORT en prod, 8000 par défaut en local)
 EXPOSE 8000
 
-# Healthcheck pour Docker
+# Healthcheck pour Docker (dev/local)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
 # Commande pour lancer l'application avec Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# - En local : port 8000
+# - Sur Vercel (ou autre PaaS) : utilisation de la variable d'env PORT si définie
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
