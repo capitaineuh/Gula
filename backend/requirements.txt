@@ -30,6 +30,9 @@ pillow==10.1.0
 google-generativeai>=0.8.0
 PyPDF2==3.0.1
 
+# Dépendances système nécessaires à certaines libs (passlib / fastapi-users)
+setuptools
+
 # Les dépendances de dev (pytest, black, mypy, flake8, isort, …)
 # sont volontairement exclues pour garder la taille de la fonction
 # serverless Vercel < 250 Mo. Utilisez un fichier séparé (ex: requirements-dev.txt)
