@@ -1,4 +1,4 @@
-# FastAPI et dépendances
+# FastAPI et dépendances (runtime uniquement pour Vercel)
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
@@ -12,8 +12,6 @@ alembic==1.13.0
 # Utilitaires
 python-dotenv==1.0.0
 python-multipart==0.0.7
-
-# Validation et sécurité
 email-validator==2.1.0
 
 # Authentification et sécurité
@@ -22,23 +20,17 @@ passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
 authlib==1.3.0
 requests==2.31.0
+httpx==0.25.2
 
 # Génération PDF
 reportlab==4.0.7
 pillow==10.1.0
 
-# IA - Gemini API (version récente pour les modèles 2.x)
+# IA - Gemini API
 google-generativeai>=0.8.0
 PyPDF2==3.0.1
 
-# Pour le développement (optionnel)
-pytest==7.4.3
-pytest-asyncio==0.21.1
-httpx==0.25.2
-
-# Outils de linting et formatage
-black==23.12.1
-flake8==6.1.0
-isort==5.13.2
-mypy==1.7.1
-
+# Les dépendances de dev (pytest, black, mypy, flake8, isort, …)
+# sont volontairement exclues pour garder la taille de la fonction
+# serverless Vercel < 250 Mo. Utilisez un fichier séparé (ex: requirements-dev.txt)
+# si besoin en local.
