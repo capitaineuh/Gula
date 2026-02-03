@@ -1,4 +1,3 @@
-Ouvrir http://localhost:3000/
-Cliquer sur "text=Données d'exemple"
-Vérifier que le texte "Résultats de l'analyse" est visible
-Prendre une capture d’écran nommée "dashboard.png"
+A.1: Ouvrir https://gulafront.vercel.app
+A.2: Cliquer sur "text=Données d'exemple"
+A.3: Vérifier que le texte "Résultats de l'analyse" est visible

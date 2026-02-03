@@ -1,6 +1,12 @@
 // src/server.ts
 import { chromium, Browser, Page } from 'playwright';
 import http from 'http';
+import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+
+// Charger les variables d'environnement depuis .env (cherche depuis le répertoire courant)
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 type ToolName = 'start' | 'open' | 'fill' | 'click' | 'assertText' | 'screenshot' | 'stop';
 
@@ -8,40 +14,97 @@ let browser: Browser | null = null;
 let page: Page | null = null;
 
 async function ensurePage() {
-  if (!browser) browser = await chromium.launch({ headless: false });
+  if (!browser) {
+    console.log('🌐 Lancement du navigateur...');
+    // Vérifier la variable HEADLESS (string depuis .env)
+    const headlessEnv = process.env.HEADLESS?.toLowerCase().trim();
+    const isHeadless = headlessEnv !== 'false'; // false seulement si explicitement "false"
+    
+    console.log(`📋 HEADLESS depuis .env: "${process.env.HEADLESS}"`);
+    console.log(`🌐 Mode headless: ${isHeadless} (false = navigateur visible, true = headless)`);
+    
+    browser = await chromium.launch({ 
+      headless: isHeadless,
+      slowMo: 100 // Ralentit les actions pour mieux voir ce qui se passe
+    });
+    
+    if (!isHeadless) {
+      console.log('✅ Navigateur lancé en mode VISIBLE - tu devrais voir la fenêtre s\'ouvrir');
+    }
+  }
   if (!page) {
     const ctx = await browser.newContext();
     page = await ctx.newPage();
+    console.log('📄 Nouvelle page créée');
   }
 }
 
 async function handleTool(name: ToolName, args: any) {
-  switch (name) {
-    case 'start':
-      await ensurePage();
-      return { ok: true };
-    case 'open':
-      await ensurePage();
-      await page!.goto(args.url, { waitUntil: 'networkidle' });
-      return { ok: true };
-    case 'fill':
-      await page!.fill(args.selector, args.value);
-      return { ok: true };
-    case 'click':
-      await page!.click(args.selector);
-      return { ok: true };
-    case 'assertText':
-      await page!.locator(`text=${args.text}`).waitFor({ state: 'visible', timeout: 5000 });
-      return { ok: true };
-    case 'screenshot':
-      await page!.screenshot({ path: args.path ?? 'screenshot.png', fullPage: true });
-      return { ok: true };
-    case 'stop':
-      await browser?.close();
-      browser = null; page = null;
-      return { ok: true };
-    default:
-      throw new Error(`Unknown tool ${name}`);
+  try {
+    switch (name) {
+      case 'start':
+        await ensurePage();
+        return { ok: true, message: 'Navigateur lancé' };
+      
+      case 'open':
+        await ensurePage();
+        if (!args.url) {
+          throw new Error('URL manquante pour open');
+        }
+        console.log(`  → Navigation vers: ${args.url}`);
+        await page!.goto(args.url, { waitUntil: 'networkidle', timeout: 30000 });
+        return { ok: true, message: `Page chargée: ${args.url}` };
+      
+      case 'fill':
+        if (!args.selector || args.value === undefined) {
+          throw new Error('selector et value requis pour fill');
+        }
+        console.log(`  → Remplissage: ${args.selector} = "${args.value}"`);
+        await page!.fill(args.selector, args.value);
+        return { ok: true, message: `Champ rempli: ${args.selector}` };
+      
+      case 'click':
+        if (!args.selector) {
+          throw new Error('selector requis pour click');
+        }
+        console.log(`  → Clic sur: ${args.selector}`);
+        await page!.click(args.selector, { timeout: 10000 });
+        return { ok: true, message: `Clic effectué: ${args.selector}` };
+      
+      case 'assertText':
+        if (!args.text) {
+          throw new Error('text requis pour assertText');
+        }
+        console.log(`  → Vérification du texte: "${args.text}"`);
+        await page!.locator(`text=${args.text}`).waitFor({ 
+          state: 'visible', 
+          timeout: 10000 
+        });
+        return { ok: true, message: `Texte trouvé: "${args.text}"` };
+      
+      case 'screenshot':
+        const screenshotPath = args.path ?? `screenshot-${Date.now()}.png`;
+        const dir = path.dirname(screenshotPath);
+        if (dir && dir !== '.') {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        console.log(`  → Capture d'écran: ${screenshotPath}`);
+        await page!.screenshot({ path: screenshotPath, fullPage: true });
+        return { ok: true, message: `Capture sauvegardée: ${screenshotPath}`, path: screenshotPath };
+      
+      case 'stop':
+        console.log('🛑 Fermeture du navigateur...');
+        await browser?.close();
+        browser = null; 
+        page = null;
+        return { ok: true, message: 'Navigateur fermé' };
+      
+      default:
+        throw new Error(`Unknown tool: ${name}`);
+    }
+  } catch (error: any) {
+    console.error(`  ❌ Erreur dans ${name}:`, error.message);
+    throw error;
   }
 }
 
@@ -83,6 +146,14 @@ const server = http.createServer(async (req, res) => {
 
 // Port par défaut déplacé à 3031 pour éviter les conflits
 const PORT = process.env.PORT || 3031;
+
+// Afficher la configuration au démarrage
+console.log('\n📋 Configuration du serveur MCP:');
+console.log(`   PORT: ${PORT}`);
+console.log(`   HEADLESS: ${process.env.HEADLESS || 'non défini (défaut: true)'}`);
+console.log(`   OLLAMA_MODEL: ${process.env.OLLAMA_MODEL || 'non défini'}\n`);
+
 server.listen(PORT, () => {
-  console.log(`MCP Playwright server running on http://localhost:${PORT}`);
+  console.log(`✅ MCP Playwright server running on http://localhost:${PORT}`);
+  console.log(`   Mode headless: ${process.env.HEADLESS === 'false' ? 'VISIBLE (fenêtre s\'ouvrira)' : 'HEADLESS (pas de fenêtre)'}\n`);
 });
