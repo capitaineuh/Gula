@@ -346,7 +346,7 @@ export default function Home() {
                 </p>
               </div>
               <p className="text-center text-sm text-gray-500">
-                © 2024 Gula. Tous droits réservés.
+                © 2025 Gula. Tous droits réservés.
               </p>
             </div>
           </footer>
@@ -357,7 +357,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="min-h-screen bg-gray-50 py-8 px-4"
+          className="min-h-screen bg-gray-50 py-4 sm:py-8 px-3 sm:px-4"
         >
           <div className="max-w-7xl mx-auto">
             <ResultsDashboard results={results} onReset={handleReset} />

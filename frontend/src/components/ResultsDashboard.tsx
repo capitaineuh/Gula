@@ -58,23 +58,23 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* En-tête avec résumé */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex justify-between items-start mb-4">
+      <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-800">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
               Résultats de l'analyse
             </h2>
             <p className="text-gray-600 mt-1">{results.message}</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <motion.button
               onClick={handleExportPDF}
               disabled={isExportingPDF}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition-colors flex items-center gap-2 shadow-sm hover:shadow-md"
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition-colors flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
             >
               {isExportingPDF ? (
                 <>
@@ -94,7 +94,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
               onClick={onReset}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded transition-colors shadow-sm hover:shadow-md"
+              className="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded transition-colors shadow-sm hover:shadow-md"
             >
               Nouvelle analyse
             </motion.button>
@@ -109,7 +109,7 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
         )}
 
         {/* Résumé des statuts avec animation en cascade */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-6">
           {[
             { value: results.results.length, label: 'Total analysés', color: 'blue', bg: 'bg-blue-50' },
             { value: results.summary.normal, label: 'Normaux', color: 'green', bg: 'bg-green-50' },
@@ -130,10 +130,16 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
                 scale: 1.05,
                 transition: { duration: 0.2 }
               }}
-              className={`${stat.bg} p-4 rounded-lg text-center cursor-default shadow-sm hover:shadow-md transition-shadow`}
+              className={`${stat.bg} p-3 sm:p-4 rounded-lg text-center cursor-default shadow-sm hover:shadow-md transition-shadow`}
             >
               <motion.div 
-                className={`text-3xl font-bold text-${stat.color}-600`}
+                className={[
+                  'text-2xl sm:text-3xl font-bold',
+                  stat.color === 'blue' ? 'text-blue-600' :
+                  stat.color === 'green' ? 'text-green-600' :
+                  stat.color === 'orange' ? 'text-orange-600' :
+                  'text-red-600'
+                ].join(' ')}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.1 + 0.3 }}
@@ -146,9 +152,109 @@ export default function ResultsDashboard({ results, onReset }: ResultsDashboardP
         </div>
       </div>
 
-      {/* Tableau des résultats avec animation */}
+      {/* Mobile: cartes (plus lisible qu'un tableau) */}
+      <motion.div
+        className="md:hidden bg-white rounded-lg shadow-lg overflow-hidden"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+      >
+        <div className="divide-y divide-gray-200">
+          {results.results.map((result, index) => {
+            const badge = getStatusBadge(result.status)
+            const isExpanded = expandedIndex === index
+
+            return (
+              <div key={index} className="px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-base font-semibold text-gray-900 truncate">
+                      {result.biomarker}
+                    </div>
+                    <div className="mt-1 text-sm text-gray-500">
+                      Plage : {result.min_value} - {result.max_value} {result.unit}
+                    </div>
+                  </div>
+                  <span className={`shrink-0 px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${badge.bg} ${badge.text}`}>
+                    {badge.label}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex items-end justify-between gap-3">
+                  <div className="text-sm text-gray-900">
+                    <span className="text-2xl font-bold">{result.value}</span>{' '}
+                    <span className="text-gray-500">{result.unit}</span>
+                  </div>
+
+                  <button
+                    onClick={() => toggleExpand(index)}
+                    className="text-primary-600 hover:text-primary-900 font-medium flex items-center gap-2 transition-colors"
+                  >
+                    <motion.svg
+                      animate={{ rotate: isExpanded ? 90 : 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </motion.svg>
+                    {isExpanded ? 'Masquer' : 'Voir plus'}
+                  </button>
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {isExpanded && (
+                    <motion.div
+                      key={`detail-mobile-${index}`}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">
+                          Visualisation comparative
+                        </h4>
+                        <BiomarkerChart result={result} />
+
+                        <div className="mt-4 space-y-4">
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">
+                              Qu'est-ce que c'est ?
+                            </h4>
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                              {result.explanation}
+                            </p>
+                          </div>
+
+                          <div className={`p-4 rounded-lg ${
+                            result.status === 'normal' ? 'bg-green-50' :
+                            result.status === 'bas' ? 'bg-orange-50' : 'bg-red-50'
+                          }`}>
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">
+                              Recommandation
+                            </h4>
+                            <p className="text-sm text-gray-700 leading-relaxed">
+                              {result.advice}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )
+          })}
+        </div>
+      </motion.div>
+
+      {/* Desktop: tableau des résultats avec animation */}
       <motion.div 
-        className="bg-white rounded-lg shadow-lg overflow-hidden"
+        className="hidden md:block bg-white rounded-lg shadow-lg overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.5 }}

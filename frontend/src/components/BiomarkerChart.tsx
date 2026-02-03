@@ -68,7 +68,7 @@ export default function BiomarkerChart({ result }: BiomarkerChartProps) {
   }
 
   return (
-    <div className="h-64">
+    <div className="h-48 sm:h-56 md:h-64">
       <Bar data={data} options={options} />
     </div>
   )
